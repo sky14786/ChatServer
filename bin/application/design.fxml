@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.RunThread">
+   <children>
+      <Label fx:id="Ltime"alignment="CENTER" prefHeight="47.0" prefWidth="643.0" text="time" textAlignment="CENTER">
+         <font>
+            <Font name="NanumSquare Bold" size="23.0" />
+         </font></Label>
+      <TextArea fx:id="TAdisplay" prefHeight="353.0" prefWidth="640.0" />
+   </children>
+</VBox>
