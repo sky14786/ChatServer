@@ -10,11 +10,11 @@ import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 
-
 public class Main extends Application {
 	private static ServerSocket serversocket;
 	private static Socket socket;
 	private static Model model = new Model();
+	private static Controller controller = new Controller();
 	private static RunThread runthread;
 
 	@Override
@@ -24,16 +24,15 @@ public class Main extends Application {
 			primaryStage.setScene(new Scene(root));
 			primaryStage.setTitle("[SERVER]");
 			primaryStage.show();
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
 	public static void main(String[] args) {
-		launch(args);
 
 		try {
+			launch(args);
 			serversocket = new ServerSocket(8000);
 			while (true) {
 				socket = new Socket();
@@ -41,6 +40,7 @@ public class Main extends Application {
 				if (socket.isConnected()) {
 					runthread = new RunThread(socket, model);
 					runthread.start();
+					controller.NowTime();
 				}
 			}
 		} catch (IOException e) {

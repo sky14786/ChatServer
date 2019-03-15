@@ -1,9 +1,12 @@
 package application;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
@@ -11,14 +14,33 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 
-class RunThread extends Thread {
-	
+public class Controller {
 	@FXML
 	private TextArea TAdisplay;
 	@FXML
 	private Label Ltime;
 	
+	private long time = System.currentTimeMillis();
+	private SimpleDateFormat daytime = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+	private String nowtime = daytime.format(new Date(time));
 	
+	@FXML
+	public void AddDisplay(String msg) {
+		TAdisplay.appendText(msg);
+	}
+	
+	@FXML
+	public void NowTime() {
+		Ltime.setText(nowtime);
+	}
+}
+
+
+
+class RunThread extends Thread {
+
+	
+	private Controller controller = new Controller();
 	private Model model;
 	private Socket socket;
 	private Boolean isduplicate;
@@ -27,6 +49,8 @@ class RunThread extends Thread {
 	private String nickname, sendmessage, receivemessage, identity;
 	private HashMap<Socket, String> hm = new HashMap<>();
 	private ArrayList<Socket> clients = new ArrayList<>();
+
+	
 
 	RunThread(Socket socket, Model model) {
 		this.model = model;
@@ -71,11 +95,12 @@ class RunThread extends Thread {
 		}
 	}
 
+	@FXML
 	public void ReceiveMessage() {
 		try {
 			while (true) {
 				receivemessage = input.readUTF();
-				TAdisplay.appendText(receivemessage + "\n");
+				controller.AddDisplay(receivemessage + "\n");
 				StringTokenizer temp = new StringTokenizer(receivemessage, ":");
 				identity = temp.nextToken();
 				if (identity.equals("1000")) {
@@ -117,4 +142,6 @@ class RunThread extends Thread {
 		}
 		return isduplicate;
 	}
+
+	
 }

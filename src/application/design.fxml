@@ -5,12 +5,12 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.RunThread">
+<VBox prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Controller" >
    <children>
-      <Label fx:id="Ltime"alignment="CENTER" prefHeight="47.0" prefWidth="643.0" text="time" textAlignment="CENTER">
+      <Label fx:id="Ltime" alignment="CENTER" prefHeight="47.0" prefWidth="643.0" text="time" textAlignment="CENTER">
          <font>
             <Font name="NanumSquare Bold" size="23.0" />
          </font></Label>
-      <TextArea fx:id="TAdisplay" prefHeight="353.0" prefWidth="640.0" />
+      <TextArea fx:id="TAdisplay" prefHeight="353.0" prefWidth="640.0" editable="false" />
    </children>
 </VBox>
