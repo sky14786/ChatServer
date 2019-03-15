@@ -1,7 +1,13 @@
 package notguiserver;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
@@ -76,7 +82,11 @@ class RunThread extends Thread {
 				StringTokenizer temp = new StringTokenizer(receivemessage, ":");
 				identity = temp.nextToken();
 				if (identity.equals("1000")) {
-					SendMessage(receivemessage);
+					SendMessage(receivemessage, identity);
+				} else if (identity.equals("1001")) {
+					String sender = temp.nextToken();
+					String filename = temp.nextToken();
+					FileReceiver(sender, filename);
 				} else if (identity.equals("1100")) {
 					String sender = temp.nextToken();
 					String receiver = temp.nextToken();
@@ -92,23 +102,77 @@ class RunThread extends Thread {
 		}
 	}
 
-	public void SendMessage(String msg) {
+	public void SendMessage(String msg, String iden) {
 		sendmessage = msg;
-		for (int j = 0; j < clients.size(); j++) {
-			try {
-				output = new DataOutputStream(clients.get(j).getOutputStream());
-				output.writeUTF(sendmessage);
-				output.flush();
-			} catch (IOException e) {
-				synchronized (this) {
-					model.DisConnect(socket, nickname);
+		if (iden.equals("1000")) {
+			for (int j = 0; j < clients.size(); j++) {
+				try {
+					output = new DataOutputStream(clients.get(j).getOutputStream());
+					output.writeUTF(sendmessage);
+					output.flush();
+				} catch (IOException e) {
+					synchronized (this) {
+						model.DisConnect(socket, nickname);
+					}
+				}
+			}
+		} else if (iden.equals("1001")) {
+			for (int j = 0; j < clients.size(); j++) {
+				try {
+					if (clients.get(j) != hm.get(nickname)) {
+						output = new DataOutputStream(clients.get(j).getOutputStream());
+						output.writeUTF(iden+":"+sendmessage);
+						output.flush();
+					}
+				} catch (IOException e) {
+					synchronized (this) {
+						model.DisConnect(socket, nickname);
+					}
 				}
 			}
 		}
 	}
 
+	public void FileReceiver(String sender, String filename) {
+		SendMessage(sender + ":" + filename, "1001");
+		try {
+			FileOutputStream fout = new FileOutputStream(filename);
+			BufferedOutputStream buout;
+			BufferedInputStream buin = new BufferedInputStream(socket.getInputStream());
+			byte[] buffer = new byte[8096];
+			int len;
+
+			while ((len = buin.read(buffer)) != -1) {
+				fout.write(buffer, 0, len);
+				for (int i = 0; i < clients.size(); i++) {
+					if (clients.get(i) != hm.get(nickname)) {
+						buout = new BufferedOutputStream(clients.get(i).getOutputStream());
+						buout.write(buffer, 0, len);
+						buout.flush();
+					}
+				}
+			}
+
+			for (int i = 0; i < clients.size(); i++) {
+				if (clients.get(i) != hm.get(nickname)) {
+					buout = new BufferedOutputStream(clients.get(i).getOutputStream());
+//					buout.flush();
+					buout.close();
+				}
+			}
+			fout.flush();
+			fout.close();
+			buin.close();
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+
+	}
+
 	public void WhisperMessage(String sender, String receiver, String msg) {
-		sendmessage = "1100:"+sender+":"+receiver+":"+msg;
+		sendmessage = "1100:" + sender + ":" + receiver + ":" + msg;
 		try {
 			output = new DataOutputStream(hm.get(receiver).getOutputStream());
 			output.writeUTF(sendmessage);
