@@ -2,12 +2,9 @@ package notguiserver;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
@@ -121,7 +118,7 @@ class RunThread extends Thread {
 				try {
 					if (clients.get(j) != hm.get(nickname)) {
 						output = new DataOutputStream(clients.get(j).getOutputStream());
-						output.writeUTF(iden+":"+sendmessage);
+						output.writeUTF(iden + ":" + sendmessage);
 						output.flush();
 					}
 				} catch (IOException e) {
@@ -156,7 +153,6 @@ class RunThread extends Thread {
 			for (int i = 0; i < clients.size(); i++) {
 				if (clients.get(i) != hm.get(nickname)) {
 					buout = new BufferedOutputStream(clients.get(i).getOutputStream());
-//					buout.flush();
 					buout.close();
 				}
 			}
