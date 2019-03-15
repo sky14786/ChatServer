@@ -25,7 +25,7 @@ class RunThread extends Thread {
 	private ArrayList<Socket> clients = new ArrayList<>();
 
 	private long time = System.currentTimeMillis();
-	private SimpleDateFormat daytime = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+	private SimpleDateFormat daytime = new SimpleDateFormat("yyyy-m-dd hh:mm:ss");
 	private String nowtime = daytime.format(new Date(time));
 
 	RunThread(Socket socket, Model model) {
@@ -89,6 +89,11 @@ class RunThread extends Thread {
 					String receiver = temp.nextToken();
 					String msg = temp.nextToken();
 					WhisperMessage(sender, receiver, msg);
+				} else if (identity.equals("1101")) {
+					String sender = temp.nextToken();
+					String filename = temp.nextToken();
+					String receiver = temp.nextToken();
+					WhisperFileReceiver(sender, filename, receiver);
 				}
 			}
 
@@ -162,6 +167,34 @@ class RunThread extends Thread {
 
 		} catch (IOException e) {
 
+			e.printStackTrace();
+		}
+
+	}
+
+	public void WhisperFileReceiver(String sender, String filename, String receiver) {
+		sendmessage = "1101:" + sender + ":" + filename + ":" + receiver;
+		try {
+			output = new DataOutputStream(hm.get(receiver).getOutputStream());
+			output.writeUTF(sendmessage);
+			output.flush();
+			FileOutputStream fout = new FileOutputStream(filename);
+			BufferedInputStream buin = new BufferedInputStream(socket.getInputStream());
+			BufferedOutputStream buout = new BufferedOutputStream(hm.get(receiver).getOutputStream());
+			int len;
+			byte[] buffer = new byte[8096];
+
+			while ((len = buin.read(buffer)) != -1) {
+				fout.write(buffer, 0, len);
+				buout.write(buffer, 0, len);
+			}
+			buout.flush();
+			fout.flush();
+			buout.close();
+			buin.close();
+			fout.close();
+
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 

@@ -10,7 +10,6 @@ class Model {
 	private HashMap<String, Socket> hm = new HashMap<>();
 	private ArrayList<String> nicknames = new ArrayList<>();
 
-
 	public HashMap<String, Socket> GetHashMap() {
 		return hm;
 	}
@@ -22,12 +21,13 @@ class Model {
 	public ArrayList<String> GetNickNames() {
 		return nicknames;
 	}
-	public void Connect(String nick,Socket soc) {
+
+	public void Connect(String nick, Socket soc) {
 		hm.put(nick, soc);
 		clients.add(soc);
 		nicknames.add(nick);
 	}
-	
+
 	public void DisConnect(Socket soc, String nick) {
 		hm.remove(soc);
 		clients.remove(soc);
