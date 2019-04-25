@@ -17,22 +17,22 @@ class RunThread extends Thread {
 
 	private Model model;
 	private Socket socket;
-	private Boolean isduplicate;
+	private Boolean isDuplicate;
 	private DataOutputStream output;
 	private DataInputStream input;
-	private String nickname, sendmessage, receivemessage, identity;
+	private String nickName, sendMessage, receiveMessage, identity;
 	private HashMap<String, Socket> hm = new HashMap<>();
 	private ArrayList<Socket> clients = new ArrayList<>();
 
 	private long time = System.currentTimeMillis();
-	private SimpleDateFormat daytime = new SimpleDateFormat("yyyy-m-dd hh:mm:ss");
-	private String nowtime = daytime.format(new Date(time));
+	private SimpleDateFormat dayTime = new SimpleDateFormat("yyyy-m-dd hh:mm:ss");
+	private String nowTime = dayTime.format(new Date(time));
 
 	RunThread(Socket socket, Model model) {
 		this.model = model;
 		this.socket = socket;
-		hm = model.GetHashMap();
-		clients = model.GetSocketList();
+		hm = model.getHashMap();
+		clients = model.getSocketList();
 
 	}
 
@@ -45,20 +45,20 @@ class RunThread extends Thread {
 			temp = new StringTokenizer(input.readUTF(), ":");
 			identity = temp.nextToken();
 			if (identity.equals("0000")) {
-				nickname = temp.nextToken();
-				if (!DuplicateCheck()) {
-					sendmessage = "1000:SERVER:서버 접속 성공!";
-					output.writeUTF(sendmessage);
+				nickName = temp.nextToken();
+				if (!duplicateCheck()) {
+					sendMessage = "1000:SERVER:서버 접속 성공!";
+					output.writeUTF(sendMessage);
 					output.flush();
 
 					synchronized (this) {
-						model.Connect(nickname, socket);
+						model.connect(nickName, socket);
 					}
 
-					ReceiveMessage();
+					receiveMessage();
 				} else {
-					sendmessage = "1000:SERVER:서버 접속 실패 ID 중복 오류!";
-					output.writeUTF(sendmessage);
+					sendMessage = "1000:SERVER:서버 접속 실패 ID 중복 오류!";
+					output.writeUTF(sendMessage);
 					output.flush();
 					socket.close();
 				}
@@ -66,79 +66,79 @@ class RunThread extends Thread {
 
 		} catch (IOException e) {
 			synchronized (this) {
-				model.DisConnect(socket, nickname);
+				model.disConnect(socket, nickName);
 			}
 		}
 	}
 
-	public void ReceiveMessage() {
+	public void receiveMessage() {
 		try {
 			while (true) {
-				receivemessage = input.readUTF();
-				System.out.println("[" + NowTime() + "]" + receivemessage);
-				StringTokenizer temp = new StringTokenizer(receivemessage, ":");
+				receiveMessage = input.readUTF();
+				System.out.println("[" + nowTime() + "]" + receiveMessage);
+				StringTokenizer temp = new StringTokenizer(receiveMessage, ":");
 				identity = temp.nextToken();
 				if (identity.equals("1000")) {
-					SendMessage(receivemessage, identity);
+					sendMessage(receiveMessage, identity);
 				} else if (identity.equals("1001")) {
 					String sender = temp.nextToken();
-					String filename = temp.nextToken();
-					FileReceiver(sender, filename);
+					String fileName = temp.nextToken();
+					fileReceiver(sender, fileName);
 				} else if (identity.equals("1100")) {
 					String sender = temp.nextToken();
 					String receiver = temp.nextToken();
 					String msg = temp.nextToken();
-					WhisperMessage(sender, receiver, msg);
+					whisperMessage(sender, receiver, msg);
 				} else if (identity.equals("1101")) {
 					String sender = temp.nextToken();
-					String filename = temp.nextToken();
+					String fileName = temp.nextToken();
 					String receiver = temp.nextToken();
-					WhisperFileReceiver(sender, filename, receiver);
+					whisperFileReceiver(sender, fileName, receiver);
 				}
 			}
 
 		} catch (IOException e) {
 			synchronized (this) {
-				model.DisConnect(socket, nickname);
+				model.disConnect(socket, nickName);
 			}
 		}
 	}
 
-	public void SendMessage(String msg, String iden) {
-		sendmessage = msg;
+	public void sendMessage(String msg, String iden) {
+		sendMessage = msg;
 		if (iden.equals("1000")) {
 			for (int j = 0; j < clients.size(); j++) {
 				try {
 					output = new DataOutputStream(clients.get(j).getOutputStream());
-					output.writeUTF(sendmessage);
+					output.writeUTF(sendMessage);
 					output.flush();
 				} catch (IOException e) {
 					synchronized (this) {
-						model.DisConnect(socket, nickname);
+						model.disConnect(socket, nickName);
 					}
 				}
 			}
 		} else if (iden.equals("1001")) {
 			for (int j = 0; j < clients.size(); j++) {
 				try {
-					if (clients.get(j) != hm.get(nickname)) {
+					if (clients.get(j) != hm.get(nickName)) {
 						output = new DataOutputStream(clients.get(j).getOutputStream());
-						output.writeUTF(iden + ":" + sendmessage);
+						output.writeUTF(iden + ":" + sendMessage);
 						output.flush();
 					}
 				} catch (IOException e) {
 					synchronized (this) {
-						model.DisConnect(socket, nickname);
+						model.disConnect(socket, nickName);
 					}
 				}
 			}
 		}
 	}
 
-	public void FileReceiver(String sender, String filename) {
-		SendMessage(sender + ":" + filename, "1001");
+	public void fileReceiver(String sender, String fileName) {
+		sendMessage(sender + ":" + fileName, "1001");
 		try {
-			FileOutputStream fout = new FileOutputStream(filename);
+			FileOutputStream fout = new FileOutputStream(fileName);
 			BufferedOutputStream buout;
 			BufferedInputStream buin = new BufferedInputStream(socket.getInputStream());
 			byte[] buffer = new byte[8096];
@@ -147,7 +147,7 @@ class RunThread extends Thread {
 			while ((len = buin.read(buffer)) != -1) {
 				fout.write(buffer, 0, len);
 				for (int i = 0; i < clients.size(); i++) {
-					if (clients.get(i) != hm.get(nickname)) {
+					if (clients.get(i) != hm.get(nickName)) {
 						buout = new BufferedOutputStream(clients.get(i).getOutputStream());
 						buout.write(buffer, 0, len);
 						buout.flush();
@@ -156,7 +156,7 @@ class RunThread extends Thread {
 			}
 
 			for (int i = 0; i < clients.size(); i++) {
-				if (clients.get(i) != hm.get(nickname)) {
+				if (clients.get(i) != hm.get(nickName)) {
 					buout = new BufferedOutputStream(clients.get(i).getOutputStream());
 					buout.close();
 				}
@@ -172,13 +172,13 @@ class RunThread extends Thread {
 
 	}
 
-	public void WhisperFileReceiver(String sender, String filename, String receiver) {
-		sendmessage = "1101:" + sender + ":" + filename + ":" + receiver;
+	public void whisperFileReceiver(String sender, String fileName, String receiver) {
+		sendMessage = "1101:" + sender + ":" + fileName + ":" + receiver;
 		try {
 			output = new DataOutputStream(hm.get(receiver).getOutputStream());
-			output.writeUTF(sendmessage);
+			output.writeUTF(sendMessage);
 			output.flush();
-			FileOutputStream fout = new FileOutputStream(filename);
+			FileOutputStream fout = new FileOutputStream(fileName);
 			BufferedInputStream buin = new BufferedInputStream(socket.getInputStream());
 			BufferedOutputStream buout = new BufferedOutputStream(hm.get(receiver).getOutputStream());
 			int len;
@@ -200,37 +200,37 @@ class RunThread extends Thread {
 
 	}
 
-	public void WhisperMessage(String sender, String receiver, String msg) {
-		sendmessage = "1100:" + sender + ":" + receiver + ":" + msg;
+	public void whisperMessage(String sender, String receiver, String msg) {
+		sendMessage = "1100:" + sender + ":" + receiver + ":" + msg;
 		try {
 			output = new DataOutputStream(hm.get(receiver).getOutputStream());
-			output.writeUTF(sendmessage);
+			output.writeUTF(sendMessage);
 			output.flush();
 		} catch (IOException e) {
 			synchronized (this) {
-				model.DisConnect(socket, nickname);
+				model.disConnect(socket, nickName);
 			}
 		}
 
 	}
 
-	public Boolean DuplicateCheck() {
-		isduplicate = false;
-		for (int i = 0; i < model.GetNickNames().size(); i++) {
-			if (model.GetNickNames().get(i).equals(nickname)) {
-				isduplicate = true;
-				return isduplicate;
+	public Boolean duplicateCheck() {
+		isDuplicate = false;
+		for (int i = 0; i < model.getNickNames().size(); i++) {
+			if (model.getNickNames().get(i).equals(nickName)) {
+				isDuplicate = true;
+				return isDuplicate;
 			} else {
-				isduplicate = false;
+				isDuplicate = false;
 			}
 		}
-		return isduplicate;
+		return isDuplicate;
 	}
 
-	public String NowTime() {
+	public String nowTime() {
 		time = System.currentTimeMillis();
-		nowtime = daytime.format(new Date(time));
-		return nowtime;
+		nowTime = dayTime.format(new Date(time));
+		return nowTime;
 	}
 
 }

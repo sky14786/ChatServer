@@ -6,20 +6,20 @@ import java.net.Socket;
 
 public class Main {
 
-	private static ServerSocket serversocket;
+	private static ServerSocket serverSocket;
 	private static Socket socket;
 	private static Model model = new Model();
-	private static RunThread runthread;
+	private static RunThread runThread;
 
 	public static void main(String[] args) {
 		try {
-			serversocket = new ServerSocket(8000);
+			serverSocket = new ServerSocket(8000);
 			while (true) {
 				socket = new Socket();
-				socket = serversocket.accept();
+				socket = serverSocket.accept();
 				if (socket.isConnected()) {
-					runthread = new RunThread(socket, model);
-					runthread.start();
+					runThread = new RunThread(socket, model);
+					runThread.start();
 
 				}
 			}
